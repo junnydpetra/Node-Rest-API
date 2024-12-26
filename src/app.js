@@ -1,5 +1,5 @@
 import express from 'express'
-/* teste */
+
 const app = express()
 
 /* Telling Express to read JSON format */
