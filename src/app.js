@@ -1,17 +1,10 @@
 import express from 'express'
+import connection from '../infra/connection.js'
 
 const app = express()
 
 /* Telling Express to read JSON format */
 app.use(express.json())
-
-/* mock */
-const teams = [
-    {id: 1, team: 'Brazil', group: 'G'},
-    {id: 2, team: 'Switzerland', group: 'G'},
-    {id: 3, team: 'Serbia', group: 'G'},
-    {id: 4, team: 'Cameroon', group: 'G'},
-]
 
 /* Get element by ID */
 function getTeamById(id) {
@@ -23,35 +16,61 @@ function getIndexTeam(id) {
     return teams.findIndex( teams => teams.id == id )
 }
 
-/* creating a default route */
-app.get('/', (req, res) => {
-    res.send('Hi, there!')
-})
-
 app.get('/teams', (req, res) => {
-    res.status(200).send(teams)
+    const sql = "SELECT * FROM tab_teams;"
+    connection.query(sql, (error, result) => {        
+        if (error) {
+            res.status(400).json( { 'error': error } )
+        } else {
+            res.status(200).json(result)  
+        }
+    })
 })
 
 app.get('/teams/:id', (req, res) => {
-    res.json(getTeamById(req.params.id))
+    const id = req.params.id
+    const sql = "SELECT * FROM tab_teams WHERE tea_id=?;"
+    connection.query(sql, id, (error, result) => {
+        const line = result[0]
+        if (error)
+            res.status(400).json( { 'error': error } )
+        
+        res.status(200).json(line)
+    })
 })
 
 app.post('/teams', (req, res) => {
-    teams.push(req.body)
-    res.status(201).send('Successfully registered team')
+    const team = req.body
+    const sql = "INSERT INTO tab_teams SET ?;"
+    connection.query(sql, team, (error, result) => {
+        if (error)
+            res.status(400).json( { 'error': error } )
+
+        res.status(201).json(result)
+    })
 })
 
 app.delete('/teams/:id', (req, res) => {
-    let index = getIndexTeam(req.params.id)
-    teams.splice(index, 1)
-    res.send(`Team ID ${req.params.id} record deleted successfully!`)
+    const id = req.params.id
+    const sql = "DELETE FROM tab_teams WHERE tea_id=?;"
+    connection.query(sql, id, (error, result) => {
+        if (error)
+            res.status(404).json( { 'error': error } )
+        
+        res.status(200).json(result)
+    })
 })
 
 app.put('/teams/:id', (req, res) => {
-    let index = getIndexTeam(req.params.id)
-    teams[index].team = req.body.team
-    teams[index].group = req.body.group
-    res.json(teams)
+    const id = req.params.id
+    const team = req.body
+    const sql = "UPDATE tab_teams SET ? WHERE tea_id=?;"
+    connection.query(sql, [team, id], (error, result) => {
+        if (error)
+            res.status(400).json( { 'error': error } )
+
+        res.status(200).json(result)
+    })
 })
 
 export default app

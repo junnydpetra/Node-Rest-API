@@ -8,4 +8,6 @@ const connection = mysql.createConnection({
     database: 'db_api_rest'
 })
 
+connection.connect()
+
 export default connection
