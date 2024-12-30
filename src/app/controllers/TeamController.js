@@ -1,60 +1,35 @@
+import TeamRepository from '../repositories/TeamRepository.js'
+
 class TeamController {
 
-    index(req, res) {
-        const sql = "SELECT * FROM tab_teams;"
-        connection.query(sql, (error, result) => {        
-            if (error) {
-                res.status(404).json( { 'error': error } )
-            } else {
-                res.status(200).json(result)  
-            }
-        })
+    async index(req, res) {
+        const result = await TeamRepository.findAll()
+        res.json(result)
     }
     
-    show(req, res) {
+    async show(req, res) {
         const id = req.params.id
-        const sql = "SELECT * FROM tab_teams WHERE tea_id=?;"
-        connection.query(sql, id, (error, result) => {
-            const line = result[0]
-            if (error)
-                res.status(404).json( { 'error': error } )
-            
-            res.status(200).json(line)
-        })
+        const row = await TeamRepository.findById(id)
+        res.json(row)
     }
     
-    store(req, res) {
+    async store(req, res) {
         const team = req.body
-        const sql = "INSERT INTO tab_teams SET ?;"
-        connection.query(sql, team, (error, result) => {
-            if (error)
-                res.status(404).json( { 'error': error } )
-    
-            res.status(201).json(result)
-        })
+        const row = await TeamRepository.create(team)
+        res.json(row)
     }
 
-    update(req, res) {
+    async update(req, res) {
         const id = req.params.id
         const team = req.body
-        const sql = "UPDATE tab_teams SET ? WHERE tea_id=?;"
-        connection.query(sql, [team, id], (error, result) => {
-            if (error)
-                res.status(400).json( { 'error': error } )
-
-            res.status(200).json(result)
-        })
+        const row = await TeamRepository.update(team, id)
+        res.json(row)
     }
-
-    delete(req, res) {
+    
+    async delete(req, res) {
         const id = req.params.id
-        const sql = "DELETE FROM tab_teams WHERE tea_id=?;"
-        connection.query(sql, id, (error, result) => {
-            if (error)
-                res.status(404).json( { 'error': error } )
-            
-            res.status(200).json(result)
-        })
+        const row = await TeamRepository.delete(id)
+        res.json(row)
     }
 
 }
